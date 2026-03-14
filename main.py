@@ -13,6 +13,9 @@ df = df.fillna("")
 # Load ANN model
 model = load_model("models/ann_model.h5", compile=False)
 
+import joblib
+model = joblib.load("models/csat_model.pkl")
+
 # Load scaler + encoders
 scaler = pickle.load(open("models/scaler.pkl","rb"))
 encoders = pickle.load(open("models/encoders.pkl","rb"))
@@ -152,3 +155,4 @@ def filter_data():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
