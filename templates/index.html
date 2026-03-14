@@ -1,792 +1,1005 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>CSAT Dashboard</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-  :root {
-    --bg: #080d1a;
-    --sidebar-bg: #0c1426;
-    --card-bg: #111827;
-    --card-border: #1e2d45;
-    --accent: #3b82f6;
-    --accent2: #06b6d4;
-    --accent3: #8b5cf6;
-    --text: #e2e8f0;
-    --text-dim: #64748b;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --glow: rgba(59,130,246,0.15);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    display: flex;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── ANIMATED BACKGROUND ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 70% 20%, rgba(59,130,246,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 10% 80%, rgba(139,92,246,0.07) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: 240px;
-    min-height: 100vh;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--card-border);
-    padding: 28px 18px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .sidebar-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 8px 28px;
-    border-bottom: 1px solid var(--card-border);
-    margin-bottom: 16px;
-  }
-
-  .logo-icon {
-    width: 38px; height: 38px;
-    background: linear-gradient(135deg, var(--accent), var(--accent3));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px;
-    box-shadow: 0 0 18px rgba(59,130,246,0.35);
-    animation: pulse-glow 3s ease-in-out infinite;
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 18px rgba(59,130,246,0.35); }
-    50% { box-shadow: 0 0 30px rgba(59,130,246,0.6); }
-  }
-
-  .logo-text {
-    font-weight: 800;
-    font-size: 17px;
-    background: linear-gradient(90deg, #fff, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -0.3px;
-  }
-
-  .sidebar a {
-    color: #94a3b8;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 14px;
-    text-decoration: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .sidebar a::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 0;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 10px;
-    transition: width 0.25s ease;
-    z-index: -1;
-    opacity: 0.15;
-  }
-
-  .sidebar a:hover {
-    color: #fff;
-    transform: translateX(6px);
-    background: rgba(59,130,246,0.1);
-    border: none;
-  }
-
-  .sidebar a:hover::before { width: 100%; }
-
-  .sidebar a.active {
-    color: var(--accent);
-    background: rgba(59,130,246,0.12);
-    border: 1px solid rgba(59,130,246,0.2);
-  }
-
-  /* ── CONTENT ── */
-  .content {
-    flex: 1;
-    padding: 36px;
-    position: relative;
-    z-index: 1;
-    animation: fadeSlideIn 0.5s ease;
-  }
-
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .page-header {
-    margin-bottom: 28px;
-  }
-
-  .page-header h2 {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(90deg, #fff 30%, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .page-header p {
-    color: var(--text-dim);
-    font-size: 14px;
-    margin-top: 4px;
-  }
-
-  /* ── STAT CARDS ── */
-  .stat-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  .stat-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.25s ease, border-color 0.25s ease;
-    animation: fadeSlideIn 0.5s ease both;
-  }
-
-  .stat-card:nth-child(1) { animation-delay: 0.05s; }
-  .stat-card:nth-child(2) { animation-delay: 0.10s; }
-  .stat-card:nth-child(3) { animation-delay: 0.15s; }
-  .stat-card:nth-child(4) { animation-delay: 0.20s; }
-
-  .stat-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(59,130,246,0.4);
-  }
-
-  .stat-card::after {
-    content: '';
-    position: absolute;
-    top: -20px; right: -20px;
-    width: 70px; height: 70px;
-    border-radius: 50%;
-    opacity: 0.12;
-  }
-
-  .stat-card.blue::after  { background: var(--accent); }
-  .stat-card.cyan::after  { background: var(--accent2); }
-  .stat-card.purple::after { background: var(--accent3); }
-  .stat-card.green::after { background: var(--success); }
-
-  .stat-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-dim);
-    font-weight: 600;
-  }
-
-  .stat-value {
-    font-size: 28px;
-    font-weight: 800;
-    font-family: 'Space Mono', monospace;
-    line-height: 1.2;
-    margin: 6px 0 4px;
-  }
-
-  .stat-card.blue .stat-value  { color: var(--accent); }
-  .stat-card.cyan .stat-value  { color: var(--accent2); }
-  .stat-card.purple .stat-value { color: var(--accent3); }
-  .stat-card.green .stat-value { color: var(--success); }
-
-  .stat-icon {
-    position: absolute; top: 16px; right: 18px;
-    font-size: 20px; opacity: 0.3;
-  }
-
-  /* ── FILTER BOX ── */
-  .filter-box {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 20px;
-    animation: fadeSlideIn 0.5s ease 0.2s both;
-  }
-
-  .filter-box label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--text-dim);
-    font-weight: 600;
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  .form-control, .form-select {
-    background: #0f1929 !important;
-    border: 1px solid var(--card-border) !important;
-    color: var(--text) !important;
-    border-radius: 9px !important;
-    font-size: 13px !important;
-    height: 40px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .form-control:focus, .form-select:focus {
-    border-color: var(--accent) !important;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important;
-    outline: none !important;
-  }
-
-  .form-control::placeholder { color: #4a5568 !important; }
-  option { background: #0f1929; }
-
-  /* ── TABLE BOX ── */
-  .table-box {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 22px;
-    animation: fadeSlideIn 0.5s ease 0.25s both;
-  }
-
-  .table-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 18px;
-  }
-
-  .table-header h4 {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .result-badge {
-    background: rgba(59,130,246,0.12);
-    border: 1px solid rgba(59,130,246,0.25);
-    color: var(--accent);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  thead th {
-    background: #0d1929;
-    color: #94a3b8;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    font-weight: 700;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--card-border);
-    white-space: nowrap;
-  }
-
-  thead th:first-child { border-radius: 8px 0 0 8px; }
-  thead th:last-child  { border-radius: 0 8px 8px 0; }
-
-  tbody tr {
-    border-bottom: 1px solid rgba(30,45,69,0.5);
-    transition: background 0.2s, transform 0.2s;
-    animation: rowFadeIn 0.35s ease both;
-  }
-
-  @keyframes rowFadeIn {
-    from { opacity: 0; transform: translateX(-8px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-
-  tbody tr:hover {
-    background: rgba(59,130,246,0.06);
-  }
-
-  tbody td {
-    padding: 12px 14px;
-    font-size: 13.5px;
-    color: var(--text);
-    vertical-align: middle;
-  }
-
-  .order-id {
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .csat-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 13px;
-    font-family: 'Space Mono', monospace;
-  }
-
-  .csat-5 { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
-  .csat-4 { background: rgba(59,130,246,0.15); color: var(--accent); border: 1px solid rgba(59,130,246,0.3); }
-  .csat-3 { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
-  .csat-2 { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
-  .csat-1 { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-
-  .price-tag {
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    color: var(--success);
-  }
-
-  /* ── DETAILS BUTTON ── */
-  .details-btn {
-    background: rgba(59,130,246,0.12);
-    border: 1px solid rgba(59,130,246,0.25);
-    color: var(--accent);
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-
-  .details-btn:hover {
-    background: var(--accent);
-    color: white;
-    transform: scale(1.07);
-    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
-  }
-
-  /* ── PAGINATION ── */
-  .pagination-bar {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 18px;
-  }
-
-  .page-btn {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    color: var(--text);
-    padding: 8px 18px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .page-btn:hover:not(:disabled) {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
-  }
-
-  .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-  .page-indicator {
-    font-size: 13px;
-    color: var(--text-dim);
-    font-family: 'Space Mono', monospace;
-    padding: 0 6px;
-  }
-
-  /* ── MODAL ── */
-  .modal-content {
-    background: #0f1929 !important;
-    border: 1px solid var(--card-border) !important;
-    border-radius: 16px !important;
-    color: var(--text) !important;
-  }
-
-  .modal-header {
-    border-bottom: 1px solid var(--card-border) !important;
-    padding: 18px 22px !important;
-  }
-
-  .modal-header h5 {
-    font-weight: 700;
-    font-size: 15px;
-  }
-
-  .modal-body {
-    padding: 20px 22px !important;
-  }
-
-  .modal-detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 9px 0;
-    border-bottom: 1px solid rgba(30,45,69,0.6);
-    font-size: 13px;
-  }
-
-  .modal-detail-row:last-child { border-bottom: none; }
-
-  .modal-key {
-    color: var(--text-dim);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-    font-weight: 600;
-  }
-
-  .modal-val {
-    font-weight: 600;
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    color: var(--text);
-    max-width: 55%;
-    text-align: right;
-    word-break: break-word;
-  }
-
-  .btn-close { filter: invert(1) !important; }
-
-  /* ── LOADING ── */
-  .loading-row td {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-dim);
-  }
-
-  .spinner {
-    display: inline-block;
-    width: 24px; height: 24px;
-    border: 2px solid rgba(59,130,246,0.2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    margin-bottom: 8px;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    text-align: center;
-    padding: 50px 20px;
-    color: var(--text-dim);
-  }
-
-  .empty-state i { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSAT Dashboard Pro ✨</title>
+    
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 15px 50px rgba(67, 97, 238, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fb;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar h3 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 3rem;
+            letter-spacing: -0.5px;
+            animation: slideInLeft 0.5s ease;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: rgba(255, 255, 255, 0.1);
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+
+        .sidebar a:hover::before {
+            width: 100%;
+        }
+
+        .sidebar a:hover {
+            color: white;
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar a i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .content {
+            margin-left: 280px;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Welcome Banner */
+        .welcome-banner {
+            background: var(--bg-gradient);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            box-shadow: var(--card-shadow);
+            animation: slideInDown 0.5s ease;
+        }
+
+        /* Stats Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: var(--primary);
+            opacity: 0.03;
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.2;
+            margin-top: 5px;
+        }
+
+        /* Charts Grid */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            animation: fadeIn 0.5s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-card h5 {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-card h5 i {
+            color: var(--primary);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            animation: slideInUp 0.5s ease;
+        }
+
+        .filter-section h5 {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-section label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 0.6rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.1);
+        }
+
+        /* Table Section */
+        .table-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(67, 97, 238, 0.05);
+            transform: scale(1.01);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            border: none;
+            border-radius: 12px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+                padding: 1rem;
+            }
+            
+            .content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--bg-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 5px 20px rgba(67, 97, 238, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: fadeInUp 0.5s ease 1s forwards;
+            opacity: 0;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.5);
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-icon">📊</div>
-    <div class="logo-text">CSAT Pro</div>
-  </div>
-  <a href="/" class="active"><i class="fa fa-house" style="width:16px"></i> Home</a>
-  <a href="/ann"><i class="fa fa-brain" style="width:16px"></i> ANN Prediction</a>
-  <a href="/analytics"><i class="fa fa-chart-line" style="width:16px"></i> Analytics</a>
-  <a href="/about"><i class="fa fa-circle-info" style="width:16px"></i> About</a>
-</div>
-
-<!-- MAIN CONTENT -->
-<div class="content">
-
-  <div class="page-header">
-    <h2>Customer Satisfaction Dashboard</h2>
-    <p>Real-time CSAT insights and customer data explorer</p>
-  </div>
-
-  <!-- STAT CARDS -->
-  <div class="stat-row">
-    <div class="stat-card blue">
-      <div class="stat-label">Total Records</div>
-      <div class="stat-value" id="statTotal">—</div>
-      <div class="stat-icon"><i class="fa fa-database"></i></div>
-    </div>
-    <div class="stat-card green">
-      <div class="stat-label">Avg CSAT Score</div>
-      <div class="stat-value" id="statAvg">—</div>
-      <div class="stat-icon"><i class="fa fa-star"></i></div>
-    </div>
-    <div class="stat-card cyan">
-      <div class="stat-label">Avg Item Price</div>
-      <div class="stat-value" id="statPrice">—</div>
-      <div class="stat-icon"><i class="fa fa-tag"></i></div>
-    </div>
-    <div class="stat-card purple">
-      <div class="stat-label">Showing Page</div>
-      <div class="stat-value" id="statPage">1</div>
-      <div class="stat-icon"><i class="fa fa-file"></i></div>
-    </div>
-  </div>
-
-  <!-- FILTERS -->
-  <div class="filter-box">
-    <div class="row g-3">
-      <div class="col">
-        <label>Channel</label>
-        <select id="channel" class="form-select">
-          <option value="">All Channels</option>
-          {% for c in channels %}
-          <option value="{{c}}">{{c}}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col">
-        <label>Category</label>
-        <select id="category" class="form-select">
-          <option value="">All Categories</option>
-          {% for c in categories %}
-          <option value="{{c}}">{{c}}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col">
-        <label>City</label>
-        <input type="text" id="city" list="cityList" placeholder="Search city..." class="form-control">
-        <datalist id="cityList">
-          {% for city in cities %}
-          <option value="{{city}}">
-          {% endfor %}
-        </datalist>
-      </div>
-      <div class="col">
-        <label>Product Category</label>
-        <select id="product" class="form-select">
-          <option value="">All Products</option>
-          {% for p in products %}
-          <option value="{{p}}">{{p}}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col">
-        <label>Agent Shift</label>
-        <select id="shift" class="form-select">
-          <option value="">All Shifts</option>
-          {% for s in shifts %}
-          <option value="{{s}}">{{s}}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col">
-        <label>Min Price</label>
-        <input type="number" id="min_price" placeholder="₹ Min" class="form-control">
-      </div>
-      <div class="col">
-        <label>Max Price</label>
-        <input type="number" id="max_price" placeholder="₹ Max" class="form-control">
-      </div>
-    </div>
-  </div>
-
-  <!-- TABLE -->
-  <div class="table-box">
-    <div class="table-header">
-      <h4><i class="fa fa-table" style="color:var(--accent);margin-right:8px"></i>Filtered Dataset</h4>
-      <span class="result-badge" id="resultBadge">Loading...</span>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3>
+            <i class="fas fa-chart-pie me-2"></i>
+            CSAT Pro
+        </h3>
+        
+        <a href="/" class="active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="/ann">
+            <i class="fas fa-brain"></i>
+            <span>Prediction</span>
+        </a>
+        <a href="/analytics">
+            <i class="fas fa-chart-line"></i>
+            <span>Analytics</span>
+        </a>
+        <a href="/about">
+            <i class="fas fa-info-circle"></i>
+            <span>About</span>
+        </a>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>City</th>
-          <th>Product</th>
-          <th>Item Price</th>
-          <th>CSAT Score</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <tr class="loading-row">
-          <td colspan="6">
-            <div class="spinner"></div>
-            <div>Loading data...</div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-2">Welcome back! 👋</h2>
+                    <p class="mb-0 opacity-75">Here's what's happening with your CSAT metrics today</p>
+                </div>
+                <div>
+                    <span class="badge bg-white text-primary p-3 rounded-pill">
+                        <i class="fas fa-calendar me-2"></i>
+                        {{ current_date }}
+                    </span>
+                </div>
+            </div>
+        </div>
 
-    <div class="pagination-bar">
-      <button class="page-btn" id="prevBtn" onclick="prevPage()" disabled>
-        <i class="fa fa-chevron-left"></i> Prev
-      </button>
-      <span class="page-indicator">Page <span id="pageNum">1</span></span>
-      <button class="page-btn" id="nextBtn" onclick="nextPage()">
-        Next <i class="fa fa-chevron-right"></i>
-      </button>
+        <!-- Stats Cards -->
+        <div class="card-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="stat-label">Total Records</div>
+                <div class="stat-value" id="statTotal">--</div>
+                <small class="text-success">
+                    <i class="fas fa-arrow-up"></i> +12% from last month
+                </small>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-label">Average CSAT</div>
+                <div class="stat-value" id="statAvg">--</div>
+                <small class="text-warning">
+                    <i class="fas fa-star-half-alt"></i> Target: 4.5
+                </small>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <div class="stat-label">Average Price</div>
+                <div class="stat-value" id="statPrice">--</div>
+                <small class="text-info">
+                    <i class="fas fa-trend-up"></i> +5% vs last week
+                </small>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h5>
+                    <i class="fas fa-chart-bar"></i>
+                    CSAT Distribution
+                </h5>
+                <canvas id="csatChart" height="250"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h5>
+                    <i class="fas fa-chart-line"></i>
+                    Price Trend (Last 20 Orders)
+                </h5>
+                <canvas id="priceChart" height="250"></canvas>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <h5>
+                <i class="fas fa-filter"></i>
+                Advanced Filters
+            </h5>
+            
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <label>Channel</label>
+                    <select id="channel" class="form-select">
+                        <option value="">All Channels</option>
+                        {% for c in channels %}
+                        <option value="{{c}}">{{c}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Category</label>
+                    <select id="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for c in categories %}
+                        <option value="{{c}}">{{c}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label>City</label>
+                    <input type="text" id="city" list="cityList" class="form-control" placeholder="Search city...">
+                    <datalist id="cityList">
+                        {% for city in cities %}
+                        <option value="{{city}}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Product</label>
+                    <select id="product" class="form-select">
+                        <option value="">All Products</option>
+                        {% for p in products %}
+                        <option value="{{p}}">{{p}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Shift</label>
+                    <select id="shift" class="form-select">
+                        <option value="">All Shifts</option>
+                        {% for s in shifts %}
+                        <option value="{{s}}">{{s}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Min Price</label>
+                    <input type="number" id="min_price" class="form-control" placeholder="₹0">
+                </div>
+
+                <div class="col-md-3">
+                    <label>Max Price</label>
+                    <input type="number" id="max_price" class="form-control" placeholder="₹10000">
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" onclick="loadData()">
+                        <i class="fas fa-search me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Customer Data
+                </h5>
+                <button onclick="downloadPDF()" class="btn btn-danger">
+                    <i class="fas fa-file-pdf me-2"></i>
+                    Download PDF
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>City</th>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>CSAT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-  </div>
 
-</div>
-
-<!-- DETAIL MODAL -->
-<div class="modal fade" id="detailModal">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5><i class="fa fa-id-card" style="color:var(--accent);margin-right:8px"></i>Customer Details</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="modalBody"></div>
+    <!-- Floating Action Button -->
+    <div class="fab" onclick="refreshData()">
+        <i class="fas fa-sync-alt"></i>
     </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  let page = 1;
-  let allData = [];
-
-  function loadData() {
-    const channel    = document.getElementById("channel").value;
-    const category   = document.getElementById("category").value;
-    const city       = document.getElementById("city").value;
-    const product    = document.getElementById("product").value;
-    const shift      = document.getElementById("shift").value;
-    const min_price  = document.getElementById("min_price").value;
-    const max_price  = document.getElementById("max_price").value;
-
-    const table = document.getElementById("tableBody");
-    table.innerHTML = `
-      <tr class="loading-row">
-        <td colspan="6">
-          <div class="spinner"></div>
-          <div style="color:var(--text-dim);font-size:13px">Fetching records...</div>
-        </td>
-      </tr>`;
-
-    fetch(`/filter_data?channel=${channel}&category=${category}&city=${city}&product=${product}&shift=${shift}&min_price=${min_price}&max_price=${max_price}&page=${page}`)
-      .then(res => res.json())
-      .then(res => {
-        allData = res.data;
-        table.innerHTML = "";
-
-        if (!res.data || res.data.length === 0) {
-          table.innerHTML = `
-            <tr><td colspan="6">
-              <div class="empty-state">
-                <i class="fa fa-magnifying-glass"></i>
-                <div>No records found</div>
-              </div>
-            </td></tr>`;
-          document.getElementById("resultBadge").textContent = "0 records";
-          return;
-        }
-
-        // Stat computations
-        const scores = res.data.map(r => parseFloat(r["CSAT Score"])).filter(v => !isNaN(v));
-        const prices = res.data.map(r => parseFloat(r["Item_price"])).filter(v => !isNaN(v));
-        const avgScore = scores.length ? (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1) : "—";
-        const avgPrice = prices.length ? "₹" + Math.round(prices.reduce((a,b) => a+b, 0) / prices.length) : "—";
-
-        document.getElementById("statTotal").textContent  = res.total || res.data.length;
-        document.getElementById("statAvg").textContent    = avgScore;
-        document.getElementById("statPrice").textContent  = avgPrice;
-        document.getElementById("statPage").textContent   = page;
-        document.getElementById("resultBadge").textContent = `${res.data.length} records`;
-
-        res.data.forEach((row, i) => {
-          const csat = row["CSAT Score"];
-          const csatClass = `csat-${Math.min(5, Math.max(1, Math.round(csat)))}`;
-          const tr = document.createElement("tr");
-          tr.style.animationDelay = `${i * 0.04}s`;
-          tr.innerHTML = `
-            <td><span class="order-id">#${row.Order_id}</span></td>
-            <td>${row.Customer_City || "—"}</td>
-            <td>${row.Product_category || "—"}</td>
-            <td><span class="price-tag">₹${row.Item_price}</span></td>
-            <td><span class="csat-badge ${csatClass}">${csat}</span></td>
-            <td>
-              <button class="details-btn" onclick="showDetails(${i})">
-                <i class="fa fa-eye"></i> View
-              </button>
-            </td>`;
-          table.appendChild(tr);
+    <script>
+        let chart1, chart2;
+        
+        // Initialize with animation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
         });
 
-        document.getElementById("prevBtn").disabled = page <= 1;
-        document.getElementById("pageNum").textContent = page;
-      })
-      .catch(() => {
-        table.innerHTML = `
-          <tr><td colspan="6">
-            <div class="empty-state">
-              <i class="fa fa-triangle-exclamation"></i>
-              <div>Failed to load data</div>
-            </div>
-          </td></tr>`;
-      });
-  }
+        function loadData() {
+            // Show loading state
+            document.getElementById('tableBody').innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
 
-  function showDetails(index) {
-    const row = allData[index];
-    let html = "";
-    for (let key in row) {
-      html += `
-        <div class="modal-detail-row">
-          <span class="modal-key">${key.replace(/_/g,' ')}</span>
-          <span class="modal-val">${row[key] ?? "—"}</span>
-        </div>`;
-    }
-    document.getElementById("modalBody").innerHTML = html;
-    new bootstrap.Modal(document.getElementById("detailModal")).show();
-  }
+            // Get filter values
+            const channel = document.getElementById("channel").value;
+            const category = document.getElementById("category").value;
+            const city = document.getElementById("city").value;
+            const product = document.getElementById("product").value;
+            const shift = document.getElementById("shift").value;
+            const min_price = document.getElementById("min_price").value;
+            const max_price = document.getElementById("max_price").value;
 
-  function nextPage() { page++; loadData(); }
-  function prevPage() { if (page > 1) { page--; loadData(); } }
+            // Simulate API call (replace with actual fetch)
+            setTimeout(() => {
+                // Dummy data - replace with actual API response
+                const dummyData = generateDummyData(50);
+                updateDashboard(dummyData);
+            }, 1000);
+        }
 
-  document.querySelectorAll("select, input").forEach(el => {
-    el.addEventListener("change", () => { page = 1; loadData(); });
-  });
+        function generateDummyData(count) {
+            const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Pune', 'Hyderabad'];
+            const products = ['Electronics', 'Clothing', 'Books', 'Home Decor', 'Sports', 'Toys'];
+            
+            let data = [];
+            for (let i = 1; i <= count; i++) {
+                data.push({
+                    Order_id: 'ORD' + String(i).padStart(5, '0'),
+                    Customer_City: cities[Math.floor(Math.random() * cities.length)],
+                    Product_category: products[Math.floor(Math.random() * products.length)],
+                    Item_price: Math.floor(Math.random() * 5000) + 500,
+                    "CSAT Score": Math.floor(Math.random() * 5) + 1
+                });
+            }
+            return data;
+        }
 
-  window.onload = loadData;
-</script>
+        function updateDashboard(data) {
+            // Update table with animation
+            const table = document.getElementById("tableBody");
+            table.innerHTML = "";
+            
+            let csat = [];
+            let price = [];
+            
+            data.forEach((row, index) => {
+                csat.push(row["CSAT Score"]);
+                price.push(row.Item_price);
+                
+                // Add with staggered animation
+                setTimeout(() => {
+                    table.innerHTML += `
+                        <tr style="animation: fadeInUp 0.3s ease ${index * 0.02}s forwards; opacity:0;">
+                            <td><span class="badge bg-light text-dark">${row.Order_id}</span></td>
+                            <td><i class="fas fa-city me-2 text-primary"></i>${row.Customer_City}</td>
+                            <td>${row.Product_category}</td>
+                            <td><span class="fw-bold">₹${row.Item_price}</span></td>
+                            <td>
+                                ${generateStarRating(row["CSAT Score"])}
+                            </td>
+                        </tr>
+                    `;
+                }, index * 20);
+            });
+
+            // Update stats with animation
+            animateValue("statTotal", 0, data.length, 1000);
+            
+            let avgCSAT = csat.reduce((a, b) => a + b, 0) / csat.length;
+            animateValue("statAvg", 0, avgCSAT.toFixed(1), 1000);
+            
+            let avgPrice = price.reduce((a, b) => a + b, 0) / price.length;
+            animateValue("statPrice", 0, "₹" + Math.round(avgPrice), 1000);
+
+            // Create charts
+            createCharts(csat, price);
+        }
+
+        function generateStarRating(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += '<i class="fas fa-star text-warning"></i>';
+                } else {
+                    stars += '<i class="far fa-star text-warning"></i>';
+                }
+            }
+            return stars;
+        }
+
+        function animateValue(elementId, start, end, duration) {
+            const element = document.getElementById(elementId);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                
+                if (elementId === "statPrice") {
+                    element.innerText = "₹" + Math.round(current);
+                } else {
+                    element.innerText = current.toFixed(1);
+                }
+            }, 16);
+        }
+
+        function createCharts(csat, price) {
+            const ctx1 = document.getElementById("csatChart");
+            
+            if (chart1) chart1.destroy();
+            
+            // CSAT Distribution
+            const csatCounts = [0, 0, 0, 0, 0];
+            csat.forEach(score => {
+                if (score >= 1 && score <= 5) csatCounts[score - 1]++;
+            });
+
+            chart1 = new Chart(ctx1, {
+                type: "bar",
+                data: {
+                    labels: ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"],
+                    datasets: [{
+                        label: "Number of Reviews",
+                        data: csatCounts,
+                        backgroundColor: [
+                            'rgba(247, 37, 133, 0.8)',
+                            'rgba(248, 150, 30, 0.8)',
+                            'rgba(255, 209, 102, 0.8)',
+                            'rgba(76, 201, 240, 0.8)',
+                            'rgba(67, 97, 238, 0.8)'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Price Trend Chart
+            const ctx2 = document.getElementById("priceChart");
+            
+            if (chart2) chart2.destroy();
+
+            chart2 = new Chart(ctx2, {
+                type: "line",
+                data: {
+                    labels: price.slice(0, 20).map((_, i) => `#${i + 1}`),
+                    datasets: [{
+                        label: "Price (₹)",
+                        data: price.slice(0, 20),
+                        borderColor: "#4361ee",
+                        backgroundColor: "rgba(67, 97, 238, 0.1)",
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: "#4361ee",
+                        pointBorderColor: "white",
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Add title
+            doc.setFontSize(20);
+            doc.setTextColor(67, 97, 238);
+            doc.text("CSAT Dashboard Report", 14, 15);
+            
+            // Add date
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 25);
+
+            // Add table
+            doc.autoTable({
+                html: "#tableBody",
+                startY: 35,
+                theme: 'grid',
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 3
+                },
+                headStyles: {
+                    fillColor: [67, 97, 238],
+                    textColor: 255,
+                    fontSize: 9,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                }
+            });
+
+            doc.save("csat_report.pdf");
+            
+            // Show success notification (you can implement this)
+            alert("PDF downloaded successfully! 📥");
+        }
+
+        function refreshData() {
+            // Add rotation animation to FAB
+            const fab = document.querySelector('.fab i');
+            fab.style.transform = 'rotate(360deg)';
+            fab.style.transition = 'transform 0.5s ease';
+            
+            setTimeout(() => {
+                fab.style.transform = 'rotate(0deg)';
+            }, 500);
+
+            // Reload data
+            loadData();
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+
+        // Add filter change listeners
+        document.querySelectorAll("select, input").forEach(el => {
+            el.addEventListener("change", loadData);
+        });
+
+        // Add input debounce for text inputs
+        let debounceTimer;
+        document.getElementById("city").addEventListener("input", function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(loadData, 500);
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

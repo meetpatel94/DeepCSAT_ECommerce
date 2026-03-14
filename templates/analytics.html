@@ -1,517 +1,1055 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>CSAT Analytics Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSAT Analytics Pro</title>
 
-<style>
-  :root {
-    --bg: #080d1a;
-    --sidebar-bg: #0c1426;
-    --card-bg: #111827;
-    --card-border: #1e2d45;
-    --accent: #3b82f6;
-    --accent2: #06b6d4;
-    --accent3: #8b5cf6;
-    --text: #e2e8f0;
-    --text-dim: #64748b;
-    --success: #10b981;
-    --warning: #f59e0b;
-  }
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datasource plugin for better interactions -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datasource@0.1.0/dist/chartjs-plugin-datasource.min.js"></script>
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  body {
-    display: flex;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+        :root {
+            --bg: #f8fafc;
+            --light: #e2e8f0;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-gradient: linear-gradient(145deg, #ffffff, #f8fafc);
+        }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 70% 20%, rgba(59,130,246,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 10% 80%, rgba(139,92,246,0.07) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            display: flex;
+            overflow-x: hidden;
+        }
 
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: 240px;
-    min-height: 100vh;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--card-border);
-    padding: 28px 18px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
 
-  .sidebar-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 8px 28px;
-    border-bottom: 1px solid var(--card-border);
-    margin-bottom: 16px;
-  }
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: var(--gradient);
+            color: white;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideInLeft 0.5s ease;
+            z-index: 1000;
+        }
 
-  .logo-icon {
-    width: 38px; height: 38px;
-    background: linear-gradient(135deg, var(--accent), var(--accent3));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px;
-    animation: pulse-glow 3s ease-in-out infinite;
-  }
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 18px rgba(59,130,246,0.35); }
-    50%       { box-shadow: 0 0 30px rgba(59,130,246,0.6); }
-  }
+        .sidebar h3 {
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 3rem;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-  .logo-text {
-    font-weight: 800;
-    font-size: 17px;
-    background: linear-gradient(90deg, #fff, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+        .sidebar h3 i {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
 
-  .sidebar a {
-    color: #94a3b8;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 14px;
-    text-decoration: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
-  }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
-  .sidebar a::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0; width: 0;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 10px;
-    transition: width 0.25s ease;
-    z-index: -1;
-    opacity: 0.15;
-  }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
 
-  .sidebar a:hover { color: #fff; transform: translateX(6px); background: rgba(59,130,246,0.1); }
-  .sidebar a:hover::before { width: 100%; }
-  .sidebar a.active {
-    color: var(--accent);
-    background: rgba(59,130,246,0.12);
-    border: 1px solid rgba(59,130,246,0.2);
-  }
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: rgba(255, 255, 255, 0.1);
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
 
-  /* ── CONTENT ── */
-  .content {
-    flex: 1;
-    padding: 36px;
-    position: relative;
-    z-index: 1;
-  }
+        .sidebar a:hover::before {
+            width: 100%;
+        }
 
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+        .sidebar a:hover {
+            color: white;
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
 
-  .page-header {
-    margin-bottom: 28px;
-    animation: fadeSlideIn 0.4s ease both;
-  }
+        .sidebar a i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
 
-  .page-header h2 {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(90deg, #fff 30%, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
 
-  .page-header p {
-    color: var(--text-dim);
-    font-size: 14px;
-    margin-top: 4px;
-  }
+        /* Main Content */
+        .content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
 
-  /* ── STAT CARDS ── */
-  .stat-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-  .stat-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.25s ease, border-color 0.25s ease;
-    animation: fadeSlideIn 0.5s ease both;
-  }
+        /* Header Section */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            animation: slideInDown 0.5s ease;
+        }
 
-  .stat-card:nth-child(1) { animation-delay: 0.05s; }
-  .stat-card:nth-child(2) { animation-delay: 0.10s; }
-  .stat-card:nth-child(3) { animation-delay: 0.15s; }
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-  .stat-card:hover { transform: translateY(-3px); border-color: rgba(59,130,246,0.35); }
+        .page-header h2 {
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 2rem;
+        }
 
-  .stat-card::after {
-    content: '';
-    position: absolute;
-    top: -20px; right: -20px;
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    opacity: 0.1;
-  }
+        .date-badge {
+            background: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            font-weight: 500;
+            color: var(--primary);
+            border: 1px solid rgba(67, 97, 238, 0.1);
+        }
 
-  .stat-card.blue::after  { background: var(--accent); }
-  .stat-card.green::after { background: var(--success); }
-  .stat-card.yellow::after{ background: var(--warning); }
+        .date-badge i {
+            margin-right: 8px;
+            color: var(--primary);
+        }
 
-  .stat-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-dim);
-    font-weight: 600;
-  }
+        /* Stats Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
 
-  .stat-value {
-    font-size: 28px;
-    font-weight: 800;
-    font-family: 'Space Mono', monospace;
-    line-height: 1.2;
-    margin: 6px 0 2px;
-  }
+        .stat-card {
+            background: var(--card-gradient);
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
 
-  .stat-card.blue  .stat-value  { color: var(--accent); }
-  .stat-card.green .stat-value  { color: var(--success); }
-  .stat-card.yellow .stat-value { color: var(--warning); }
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
 
-  .stat-sub { font-size: 12px; color: var(--text-dim); }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-  .stat-icon {
-    position: absolute; top: 16px; right: 18px;
-    font-size: 20px; opacity: 0.25;
-  }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(67, 97, 238, 0.1);
+        }
 
-  /* ── CHART CARDS ── */
-  .chart-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 22px;
-    transition: transform 0.25s ease, border-color 0.25s ease;
-    animation: fadeSlideIn 0.5s ease both;
-    height: 100%;
-  }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: var(--primary);
+            opacity: 0.03;
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
 
-  .chart-card:hover { transform: translateY(-3px); border-color: rgba(59,130,246,0.3); }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-  .chart-card:nth-child(1) { animation-delay: 0.2s; }
-  .chart-card:nth-child(2) { animation-delay: 0.25s; }
+        .stat-label i {
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
 
-  .chart-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 18px;
-  }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.2;
+            margin-bottom: 0.3rem;
+        }
 
-  .chart-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+        .stat-trend {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-  .chart-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-  }
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
 
-  .dot-blue   { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-  .dot-green  { background: var(--success); box-shadow: 0 0 6px var(--success); }
-  .dot-yellow { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
-  .dot-purple { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
+        /* Charts Grid */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
 
-  .chart-badge {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-family: 'Space Mono', monospace;
-  }
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.5s ease;
+        }
 
-  .badge-blue   { background: rgba(59,130,246,0.12); color: var(--accent); border: 1px solid rgba(59,130,246,0.2); }
-  .badge-green  { background: rgba(16,185,129,0.12); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
-  .badge-yellow { background: rgba(245,158,11,0.12); color: var(--warning); border: 1px solid rgba(245,158,11,0.2); }
-  .badge-purple { background: rgba(139,92,246,0.12); color: var(--accent3); border: 1px solid rgba(139,92,246,0.2); }
+        .chart-card:hover {
+            box-shadow: 0 20px 40px rgba(67, 97, 238, 0.1);
+        }
 
-  .full-chart-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 22px;
-    margin-top: 20px;
-    transition: transform 0.25s ease, border-color 0.25s ease;
-    animation: fadeSlideIn 0.5s ease 0.3s both;
-  }
+        .full-chart {
+            grid-column: 1 / -1;
+            animation: fadeIn 0.5s ease 0.2s forwards;
+            opacity: 0;
+        }
 
-  .full-chart-card:hover { transform: translateY(-3px); border-color: rgba(59,130,246,0.3); }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
 
-  canvas { display: block; }
-</style>
+        .chart-header h5 {
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-header h5 i {
+            color: var(--primary);
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            border: 1px solid var(--light);
+            background: white;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chart-action-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* Insights Panel */
+        .insights-panel {
+            background: var(--gradient);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            margin-top: 1.5rem;
+            animation: slideInUp 0.5s ease 0.3s forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .insights-panel h5 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .insight-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Loading Animation */
+        .chart-loading {
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 5px 20px rgba(67, 97, 238, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+            z-index: 1000;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+                padding: 1rem;
+            }
+            
+            .content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: start;
+            }
+        }
+
+        /* Tooltip Customization */
+        .chart-tooltip {
+            background: var(--dark) !important;
+            color: white !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-size: 0.9rem !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+        }
+    </style>
 </head>
+
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-icon">📊</div>
-    <div class="logo-text">CSAT Pro</div>
-  </div>
-  <a href="/"><i class="fa fa-house" style="width:16px"></i> Home</a>
-  <a href="/ann"><i class="fa fa-brain" style="width:16px"></i> ANN Prediction</a>
-  <a href="/analytics" class="active"><i class="fa fa-chart-line" style="width:16px"></i> Analytics</a>
-  <a href="/about"><i class="fa fa-circle-info" style="width:16px"></i> About</a>
-</div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h3>
+            <i class="fas fa-chart-pie"></i>
+            CSAT Pro
+        </h3>
 
-<!-- CONTENT -->
-<div class="content">
-
-  <div class="page-header">
-    <h2>CSAT Analytics Dashboard</h2>
-    <p>Visual breakdown of customer satisfaction trends across cities, products & channels</p>
-  </div>
-
-  <!-- STAT CARDS -->
-  <div class="stat-row">
-    <div class="stat-card blue">
-      <div class="stat-label">Score Distribution</div>
-      <div class="stat-value">{{ csat.values.tolist() | sum }}</div>
-      <div class="stat-sub">Total responses tracked</div>
-      <div class="stat-icon"><i class="fa fa-chart-bar"></i></div>
+        <a href="/">
+            <i class="fa fa-home"></i> Home
+        </a>
+        <a href="/ann">
+            <i class="fa fa-brain"></i> Prediction
+        </a>
+        <a href="/analytics" class="active">
+            <i class="fa fa-chart-line"></i> Analytics
+        </a>
+        <a href="/about">
+            <i class="fa fa-info-circle"></i> About
+        </a>
     </div>
-    <div class="stat-card green">
-      <div class="stat-label">Top City Avg CSAT</div>
-      <div class="stat-value">{{ "%.2f" | format(city.values.tolist() | max) }}</div>
-      <div class="stat-sub">{{ city.idxmax() }}</div>
-      <div class="stat-icon"><i class="fa fa-location-dot"></i></div>
-    </div>
-    <div class="stat-card yellow">
-      <div class="stat-label">Top Product Avg CSAT</div>
-      <div class="stat-value">{{ "%.2f" | format(product.values.tolist() | max) }}</div>
-      <div class="stat-sub">{{ product.idxmax() }}</div>
-      <div class="stat-icon"><i class="fa fa-box"></i></div>
-    </div>
-  </div>
 
-  <!-- TOP ROW CHARTS -->
-  <div class="row g-4">
-    <div class="col-md-5">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title">
-            <span class="chart-dot dot-blue"></span>
-            CSAT Score Distribution
-          </div>
-          <span class="chart-badge badge-blue">Distribution</span>
+    <!-- CONTENT -->
+    <div class="content">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h2>
+                <i class="fas fa-chart-pie me-3" style="color: var(--primary);"></i>
+                Analytics Dashboard
+            </h2>
+            <div class="date-badge">
+                <i class="far fa-calendar-alt"></i>
+                <span id="currentDate"></span>
+            </div>
         </div>
-        <canvas id="csatChart" height="220"></canvas>
-      </div>
-    </div>
 
-    <div class="col-md-7">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title">
-            <span class="chart-dot dot-green"></span>
-            Top Cities by Average CSAT
-          </div>
-          <span class="chart-badge badge-green">City View</span>
+        <!-- SUMMARY CARDS with Jinja templates -->
+        <div class="card-grid">
+            <div class="stat-card">
+                <div class="stat-label">
+                    <i class="fas fa-users"></i> Total Responses
+                </div>
+                <div class="stat-value" id="totalResponses">
+                    {{ csat.values.tolist() | sum }}
+                </div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i> +12.5% from last month
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    <i class="fas fa-city"></i> Top City CSAT
+                </div>
+                <div class="stat-value" id="topCityCSAT">
+                    {{ "%.2f"|format(city.values.tolist()|max) }}
+                </div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-star"></i> Excellent performance
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    <i class="fas fa-box"></i> Top Product CSAT
+                </div>
+                <div class="stat-value" id="topProductCSAT">
+                    {{ "%.2f"|format(product.values.tolist()|max) }}
+                </div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-fire"></i> High demand
+                </div>
+            </div>
         </div>
-        <canvas id="cityChart" height="220"></canvas>
-      </div>
+
+        <!-- CHARTS GRID -->
+        <div class="chart-grid">
+            <!-- CSAT Distribution Chart -->
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="chart-header">
+                    <h5>
+                        <i class="fas fa-chart-bar"></i>
+                        CSAT Score Distribution
+                    </h5>
+                    <div class="chart-actions">
+                        <button class="chart-action-btn" onclick="exportChart('csatChart', 'png')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="chart-action-btn" onclick="toggleChartType('csatChart')">
+                            <i class="fas fa-chart-pie"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="csatChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Cities Chart -->
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="chart-header">
+                    <h5>
+                        <i class="fas fa-city"></i>
+                        Top Cities by CSAT
+                    </h5>
+                    <div class="chart-actions">
+                        <button class="chart-action-btn" onclick="exportChart('cityChart', 'png')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="chart-action-btn" onclick="sortChart('cityChart', 'desc')">
+                            <i class="fas fa-sort-amount-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="cityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Width Chart -->
+        <div class="chart-card full-chart" data-aos="fade-up" data-aos-delay="300">
+            <div class="chart-header">
+                <h5>
+                    <i class="fas fa-chart-line"></i>
+                    Product Category Performance
+                </h5>
+                <div class="chart-actions">
+                    <button class="chart-action-btn" onclick="exportChart('productChart', 'png')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="chart-action-btn" onclick="toggleChartType('productChart')">
+                        <i class="fas fa-chart-bar"></i>
+                    </button>
+                    <button class="chart-action-btn" onclick="toggleChartType('productChart')">
+                        <i class="fas fa-chart-line"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="productChart"></canvas>
+            </div>
+        </div>
+
+        <!-- INSIGHTS PANEL -->
+        <div class="insights-panel">
+            <h5>
+                <i class="fas fa-lightbulb"></i>
+                Key Insights
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div>
+                            <small>Best Performing City</small>
+                            <strong>{{ city.index.tolist()[city.values.tolist().index(city.values.tolist()|max)] }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <small>Top Product</small>
+                            <strong>{{ product.index.tolist()[product.values.tolist().index(product.values.tolist()|max)] }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <small>Overall Average</small>
+                            <strong>{{ "%.2f"|format(csat.values.tolist()|sum / csat.values.tolist()|length) }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- FULL WIDTH CHART -->
-  <div class="full-chart-card">
-    <div class="chart-header">
-      <div class="chart-title">
-        <span class="chart-dot dot-yellow"></span>
-        Product Category vs Average CSAT
-      </div>
-      <span class="chart-badge badge-yellow">Product View</span>
+    <!-- FLOATING ACTION BUTTON -->
+    <div class="fab" onclick="refreshAnalytics()">
+        <i class="fas fa-sync-alt"></i>
     </div>
-    <canvas id="productChart" height="100"></canvas>
-  </div>
 
-</div>
+    <!-- AOS Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 50
+        });
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Dark theme defaults for all charts
-  Chart.defaults.color = '#64748b';
-  Chart.defaults.borderColor = '#1e2d45';
-  Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
 
-  const gridOpts = {
-    color: 'rgba(30,45,69,0.8)',
-    drawBorder: false
-  };
+        // Chart instances for manipulation
+        let csatChartInstance, cityChartInstance, productChartInstance;
 
-  const tooltipOpts = {
-    backgroundColor: '#0f1929',
-    borderColor: '#1e2d45',
-    borderWidth: 1,
-    titleColor: '#e2e8f0',
-    bodyColor: '#94a3b8',
-    padding: 12,
-    cornerRadius: 8,
-    displayColors: true
-  };
+        // CSAT Chart Data from Jinja
+        const csatLabels = {{ csat.index.tolist() | tojson }};
+        const csatValues = {{ csat.values.tolist() | tojson }};
 
-  /* ── CSAT Distribution ── */
-  const csatLabels = {{ csat.index.tolist() | tojson }};
-  const csatValues = {{ csat.values.tolist() | tojson }};
+        // City Chart Data
+        const cityLabels = {{ city.index.tolist() | tojson }};
+        const cityValues = {{ city.values.tolist() | tojson }};
 
-  new Chart(document.getElementById("csatChart"), {
-    type: "bar",
-    data: {
-      labels: csatLabels,
-      datasets: [{
-        label: "Count",
-        data: csatValues,
-        backgroundColor: csatValues.map((_, i) => [
-          'rgba(239,68,68,0.75)',
-          'rgba(249,115,22,0.75)',
-          'rgba(245,158,11,0.75)',
-          'rgba(59,130,246,0.75)',
-          'rgba(16,185,129,0.75)'
-        ][i] || 'rgba(59,130,246,0.75)'),
-        borderRadius: 8,
-        borderSkipped: false
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: tooltipOpts
-      },
-      scales: {
-        x: { grid: gridOpts, ticks: { color: '#64748b' } },
-        y: { grid: gridOpts, ticks: { color: '#64748b' } }
-      },
-      animation: {
-        duration: 900,
-        easing: 'easeOutQuart'
-      }
-    }
-  });
+        // Product Chart Data
+        const productLabels = {{ product.index.tolist() | tojson }};
+        const productValues = {{ product.values.tolist() | tojson }};
 
-  /* ── City Chart ── */
-  const cityLabels = {{ city.index.tolist() | tojson }};
-  const cityValues = {{ city.values.tolist() | tojson }};
+        // Initialize all charts
+        function initCharts() {
+            // CSAT Distribution Chart
+            const csatCtx = document.getElementById("csatChart").getContext("2d");
+            csatChartInstance = new Chart(csatCtx, {
+                type: "bar",
+                data: {
+                    labels: csatLabels,
+                    datasets: [{
+                        label: "Number of Responses",
+                        data: csatValues,
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(67, 97, 238, 0.8)',
+                            'rgba(55, 48, 163, 0.8)'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            padding: 12,
+                            cornerRadius: 8
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
 
-  new Chart(document.getElementById("cityChart"), {
-    type: "bar",
-    data: {
-      labels: cityLabels,
-      datasets: [{
-        label: "Avg CSAT",
-        data: cityValues,
-        backgroundColor: 'rgba(16,185,129,0.2)',
-        borderColor: '#10b981',
-        borderWidth: 2,
-        borderRadius: 8,
-        borderSkipped: false
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: tooltipOpts
-      },
-      scales: {
-        x: { grid: gridOpts, ticks: { color: '#64748b', maxRotation: 35 } },
-        y: {
-          grid: gridOpts,
-          ticks: { color: '#64748b' },
-          min: 0, max: 5
+            // City Chart
+            const cityCtx = document.getElementById("cityChart").getContext("2d");
+            
+            // Generate colors based on values
+            const cityColors = cityValues.map(value => {
+                if (value >= 4.5) return 'rgba(16, 185, 129, 0.8)';
+                if (value >= 4.0) return 'rgba(67, 97, 238, 0.8)';
+                if (value >= 3.5) return 'rgba(245, 158, 11, 0.8)';
+                return 'rgba(239, 68, 68, 0.8)';
+            });
+
+            cityChartInstance = new Chart(cityCtx, {
+                type: "bar",
+                data: {
+                    labels: cityLabels,
+                    datasets: [{
+                        label: "Average CSAT Score",
+                        data: cityValues,
+                        backgroundColor: cityColors,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `CSAT: ${context.raw.toFixed(2)} ⭐`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Product Chart
+            const productCtx = document.getElementById("productChart").getContext("2d");
+            productChartInstance = new Chart(productCtx, {
+                type: "line",
+                data: {
+                    labels: productLabels,
+                    datasets: [{
+                        label: "Average CSAT Score",
+                        data: productValues,
+                        borderColor: "#4361ee",
+                        backgroundColor: "rgba(67, 97, 238, 0.1)",
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: "#4361ee",
+                        pointBorderColor: "white",
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `CSAT: ${context.raw.toFixed(2)} ⭐`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
         }
-      },
-      animation: { duration: 900, easing: 'easeOutQuart', delay: 150 }
-    }
-  });
 
-  /* ── Product Chart ── */
-  const productLabels = {{ product.index.tolist() | tojson }};
-  const productValues = {{ product.values.tolist() | tojson }};
-
-  new Chart(document.getElementById("productChart"), {
-    type: "bar",
-    data: {
-      labels: productLabels,
-      datasets: [{
-        label: "Avg CSAT",
-        data: productValues,
-        backgroundColor: 'rgba(245,158,11,0.2)',
-        borderColor: '#f59e0b',
-        borderWidth: 2,
-        borderRadius: 8,
-        borderSkipped: false
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: tooltipOpts
-      },
-      scales: {
-        x: { grid: gridOpts, ticks: { color: '#64748b' } },
-        y: {
-          grid: gridOpts,
-          ticks: { color: '#64748b' },
-          min: 0, max: 5
+        // Chart interaction functions
+        function exportChart(chartId, format) {
+            const canvas = document.getElementById(chartId);
+            const link = document.createElement('a');
+            link.download = `${chartId}_export.${format}`;
+            link.href = canvas.toDataURL(`image/${format}`);
+            link.click();
+            
+            // Show notification
+            showNotification('Chart exported successfully! 📊');
         }
-      },
-      animation: { duration: 900, easing: 'easeOutQuart', delay: 300 }
-    }
-  });
-</script>
+
+        function toggleChartType(chartId) {
+            const chart = chartId === 'csatChart' ? csatChartInstance :
+                         chartId === 'cityChart' ? cityChartInstance : productChartInstance;
+            
+            const newType = chart.config.type === 'bar' ? 'line' : 'bar';
+            chart.config.type = newType;
+            chart.update();
+            
+            showNotification(`Switched to ${newType} chart view! 🔄`);
+        }
+
+        function sortChart(chartId, order) {
+            const chart = chartId === 'cityChart' ? cityChartInstance : null;
+            if (!chart) return;
+
+            const data = chart.data;
+            const indices = Array.from(data.labels.keys());
+            
+            indices.sort((a, b) => {
+                return order === 'desc' ? 
+                    cityValues[b] - cityValues[a] : 
+                    cityValues[a] - cityValues[b];
+            });
+
+            data.labels = indices.map(i => cityLabels[i]);
+            data.datasets[0].data = indices.map(i => cityValues[i]);
+            
+            chart.update();
+            showNotification(`Chart sorted ${order === 'desc' ? '⬇️' : '⬆️'}`);
+        }
+
+        function refreshAnalytics() {
+            // Add rotation animation
+            const fab = document.querySelector('.fab i');
+            fab.style.transform = 'rotate(360deg)';
+            fab.style.transition = 'transform 0.5s ease';
+            
+            setTimeout(() => {
+                fab.style.transform = 'rotate(0deg)';
+            }, 500);
+
+            // Simulate data refresh
+            showNotification('Refreshing analytics data... 🔄');
+            
+            // Here you would typically fetch new data
+            setTimeout(() => {
+                showNotification('Analytics updated! ✨');
+            }, 1500);
+        }
+
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 100px;
+                right: 30px;
+                background: var(--gradient);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 50px;
+                font-weight: 500;
+                box-shadow: 0 5px 20px rgba(67, 97, 238, 0.3);
+                animation: slideInRight 0.3s ease;
+                z-index: 1001;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add animation keyframes for notification
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', initCharts);
+
+        // Auto-refresh every 60 seconds
+        setInterval(refreshAnalytics, 60000);
+
+        // Console welcome message
+        console.log('%c📊 CSAT Analytics Dashboard Loaded!', 'color: #4361ee; font-size: 16px; font-weight: bold;');
+        console.log('%c✨ Interactive charts ready', 'color: #10b981; font-size: 12px;');
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

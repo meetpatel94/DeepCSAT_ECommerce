@@ -3,3 +3,4 @@ __.pycache__/
 .ipynb_checkpoints/
 *.dylib
 *.so
+*.h5
