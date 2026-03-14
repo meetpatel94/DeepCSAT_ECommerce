@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import pickle
-# from tensorflow.keras.models import load_model
 import numpy as np
+import joblib
 
 app = Flask(__name__)
 
@@ -10,15 +10,13 @@ app = Flask(__name__)
 df = pd.read_csv("data/eCommerce_Customer_support_data.csv")
 df = df.fillna("")
 
-# Load ANN model
-model = load_model("models/ann_model.h5", compile=False)
-
-import joblib
+# Load ML model
 model = joblib.load("models/csat_model.pkl")
 
 # Load scaler + encoders
 scaler = pickle.load(open("models/scaler.pkl","rb"))
 encoders = pickle.load(open("models/encoders.pkl","rb"))
+
 
 @app.route("/")
 def home():
@@ -70,8 +68,7 @@ def predict():
 
     prediction = model.predict(scaled)
 
-    csat = round(float(prediction[0][0]),2)
-
+    csat = round(float(prediction[0]),2)
     csat = max(1, min(5, csat))
 
     return render_template(
@@ -83,6 +80,7 @@ def predict():
         cities=df["Customer_City"].unique(),
         prediction=csat
     )
+
 
 @app.route("/analytics")
 def analytics():
@@ -102,9 +100,12 @@ def analytics():
         product=product
     )
 
+
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+
 @app.route("/filter_data")
 def filter_data():
 
@@ -154,5 +155,4 @@ def filter_data():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
-    app.run(host="0.0.0.0", port=10000)
+    app.run()
