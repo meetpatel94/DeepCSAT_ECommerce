@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ANN CSAT Prediction</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  :root {
+    --bg: #080d1a;
+    --sidebar-bg: #0c1426;
+    --card-bg: #111827;
+    --card-border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --accent3: #8b5cf6;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --success: #10b981;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    display: flex;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 20%, rgba(59,130,246,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 10% 80%, rgba(139,92,246,0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--card-border);
+    padding: 28px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px 28px;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 16px;
+  }
+
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    box-shadow: 0 0 18px rgba(59,130,246,0.35);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 18px rgba(59,130,246,0.35); }
+    50%       { box-shadow: 0 0 30px rgba(59,130,246,0.6); }
+  }
+
+  .logo-text {
+    font-weight: 800;
+    font-size: 17px;
+    background: linear-gradient(90deg, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .sidebar a {
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar a::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    transition: width 0.25s ease;
+    z-index: -1;
+    opacity: 0.15;
+  }
+
+  .sidebar a:hover {
+    color: #fff;
+    transform: translateX(6px);
+    background: rgba(59,130,246,0.1);
+  }
+
+  .sidebar a:hover::before { width: 100%; }
+
+  .sidebar a.active {
+    color: var(--accent);
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    flex: 1;
+    padding: 36px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-header {
+    margin-bottom: 28px;
+    animation: fadeSlideIn 0.4s ease both;
+  }
+
+  .page-header h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #fff 30%, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .page-header p {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── FORM CARD ── */
+  .form-box {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 30px;
+    animation: fadeSlideIn 0.5s ease 0.1s both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .form-box::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(59,130,246,0.08), transparent 70%);
+    pointer-events: none;
+  }
+
+  .section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--card-border);
+  }
+
+  /* ── INPUTS ── */
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .field-group label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  .form-control, .form-select {
+    background: #0f1929 !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text) !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    height: 44px;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important;
+    outline: none !important;
+    transform: translateY(-1px);
+  }
+
+  .form-control::placeholder { color: #4a5568 !important; }
+  option { background: #0f1929; }
+
+  /* ── PREDICT BUTTON ── */
+  .predict-btn {
+    background: linear-gradient(135deg, var(--accent), #2563eb);
+    border: none;
+    color: white;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(59,130,246,0.3);
+  }
+
+  .predict-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .predict-btn:hover {
+    transform: scale(1.05) translateY(-1px);
+    box-shadow: 0 8px 28px rgba(59,130,246,0.45);
+  }
+
+  .predict-btn:hover::before { opacity: 1; }
+
+  .predict-btn:active { transform: scale(0.98); }
+
+  /* ── RESULT CARD ── */
+  .result-card {
+    margin-top: 28px;
+    border-radius: 14px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    animation: resultReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  @keyframes resultReveal {
+    from { opacity: 0; transform: scale(0.9) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .result-card.good {
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.25);
+  }
+
+  .result-card.mid {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.25);
+  }
+
+  .result-card.bad {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.25);
+  }
+
+  .result-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .good .result-icon { background: rgba(16,185,129,0.15); }
+  .mid  .result-icon { background: rgba(245,158,11,0.15); }
+  .bad  .result-icon { background: rgba(239,68,68,0.15); }
+
+  .result-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .result-score {
+    font-size: 36px;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    line-height: 1;
+  }
+
+  .good .result-score { color: #10b981; }
+  .mid  .result-score { color: #f59e0b; }
+  .bad  .result-score { color: #ef4444; }
+
+  .result-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .result-glow {
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    opacity: 0.08;
+  }
+
+  .good .result-glow { background: #10b981; }
+  .mid  .result-glow { background: #f59e0b; }
+  .bad  .result-glow { background: #ef4444; }
+
+  /* ── DIVIDER ── */
+  .form-divider {
+    height: 1px;
+    background: var(--card-border);
+    margin: 24px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">📊</div>
+    <div class="logo-text">CSAT Pro</div>
+  </div>
+  <a href="/"><i class="fa fa-house" style="width:16px"></i> Home</a>
+  <a href="/ann" class="active"><i class="fa fa-brain" style="width:16px"></i> ANN Prediction</a>
+  <a href="/analytics"><i class="fa fa-chart-line" style="width:16px"></i> Analytics</a>
+  <a href="/about"><i class="fa fa-circle-info" style="width:16px"></i> About</a>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <div class="page-header">
+    <h2>ANN CSAT Prediction</h2>
+    <p>Fill in the customer details to predict satisfaction score using the neural network model</p>
+  </div>
+
+  <div class="form-box">
+
+    <div class="section-title">
+      <i class="fa fa-sliders" style="color:var(--accent)"></i>
+      Input Parameters
+    </div>
+
+    <form method="POST" action="/predict">
+      <div class="row g-3">
+
+        <div class="col-md-4">
+          <div class="field-group">
+            <label><i class="fa fa-signal"></i> &nbsp;Channel</label>
+            <select name="channel" class="form-select">
+              {% for c in channels %}
+              <option value="{{c}}">{{c}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="field-group">
+            <label><i class="fa fa-tags"></i> &nbsp;Category</label>
+            <select name="category" class="form-select">
+              {% for c in categories %}
+              <option value="{{c}}">{{c}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="field-group">
+            <label><i class="fa fa-location-dot"></i> &nbsp;City</label>
+            <input type="text" name="city" list="cityList"
+              placeholder="Search city..." class="form-control" required>
+            <datalist id="cityList">
+              {% for city in cities %}
+              <option value="{{city}}">
+              {% endfor %}
+            </datalist>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="field-group">
+            <label><i class="fa fa-box"></i> &nbsp;Product Category</label>
+            <input type="text" name="product" list="productList"
+              placeholder="Search product..." class="form-control" required>
+            <datalist id="productList">
+              {% for p in products %}
+              <option value="{{p}}">
+              {% endfor %}
+            </datalist>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="field-group">
+            <label><i class="fa fa-clock"></i> &nbsp;Agent Shift</label>
+            <select name="shift" class="form-select">
+              {% for s in shifts %}
+              <option value="{{s}}">{{s}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="field-group">
+            <label><i class="fa fa-indian-rupee-sign"></i> &nbsp;Item Price</label>
+            <input type="number" name="price"
+              placeholder="Enter price..." class="form-control" required>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-divider"></div>
+
+      <button type="submit" class="predict-btn">
+        <i class="fa fa-bolt"></i>
+        Predict CSAT Score
+      </button>
+    </form>
+
+    <!-- RESULT -->
+    {% if prediction %}
+    {% set score = prediction | float %}
+    {% if score >= 4 %}
+      {% set rclass = "good" %}
+      {% set icon = "😊" %}
+      {% set desc = "Excellent satisfaction — customer is very happy!" %}
+    {% elif score >= 3 %}
+      {% set rclass = "mid" %}
+      {% set icon = "😐" %}
+      {% set desc = "Moderate satisfaction — room for improvement." %}
+    {% else %}
+      {% set rclass = "bad" %}
+      {% set icon = "😞" %}
+      {% set desc = "Low satisfaction — immediate attention needed." %}
+    {% endif %}
+
+    <div class="result-card {{rclass}}">
+      <div class="result-glow"></div>
+      <div class="result-icon">{{icon}}</div>
+      <div>
+        <div class="result-label">Predicted CSAT Score</div>
+        <div class="result-score">{{prediction}}</div>
+        <div class="result-desc">{{desc}}</div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Input focus ripple effect
+  document.querySelectorAll('.form-control, .form-select').forEach(el => {
+    el.addEventListener('focus', function() {
+      this.parentElement.style.transform = 'translateY(-2px)';
+      this.parentElement.style.transition = '0.2s ease';
+    });
+    el.addEventListener('blur', function() {
+      this.parentElement.style.transform = 'translateY(0)';
+    });
+  });
+
+  // Button loading state on submit
+  const form = document.querySelector('form');
+  const btn  = document.querySelector('.predict-btn');
+  if (form && btn) {
+    form.addEventListener('submit', () => {
+      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Predicting...';
+      btn.disabled = true;
+    });
+  }
+</script>
+
+</body>
+</html>

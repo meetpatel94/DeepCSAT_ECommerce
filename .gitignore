@@ -1,0 +1,5 @@
+.venv/
+__.pycache__/
+.ipynb_checkpoints/
+*.dylib
+*.so

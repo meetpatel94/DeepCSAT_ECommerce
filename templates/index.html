@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSAT Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  :root {
+    --bg: #080d1a;
+    --sidebar-bg: #0c1426;
+    --card-bg: #111827;
+    --card-border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --accent3: #8b5cf6;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --glow: rgba(59,130,246,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    display: flex;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── ANIMATED BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 20%, rgba(59,130,246,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 10% 80%, rgba(139,92,246,0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--card-border);
+    padding: 28px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px 28px;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 16px;
+  }
+
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    box-shadow: 0 0 18px rgba(59,130,246,0.35);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 18px rgba(59,130,246,0.35); }
+    50% { box-shadow: 0 0 30px rgba(59,130,246,0.6); }
+  }
+
+  .logo-text {
+    font-weight: 800;
+    font-size: 17px;
+    background: linear-gradient(90deg, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.3px;
+  }
+
+  .sidebar a {
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar a::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    transition: width 0.25s ease;
+    z-index: -1;
+    opacity: 0.15;
+  }
+
+  .sidebar a:hover {
+    color: #fff;
+    transform: translateX(6px);
+    background: rgba(59,130,246,0.1);
+    border: none;
+  }
+
+  .sidebar a:hover::before { width: 100%; }
+
+  .sidebar a.active {
+    color: var(--accent);
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    flex: 1;
+    padding: 36px;
+    position: relative;
+    z-index: 1;
+    animation: fadeSlideIn 0.5s ease;
+  }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .page-header {
+    margin-bottom: 28px;
+  }
+
+  .page-header h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #fff 30%, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .page-header p {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+    animation: fadeSlideIn 0.5s ease both;
+  }
+
+  .stat-card:nth-child(1) { animation-delay: 0.05s; }
+  .stat-card:nth-child(2) { animation-delay: 0.10s; }
+  .stat-card:nth-child(3) { animation-delay: 0.15s; }
+  .stat-card:nth-child(4) { animation-delay: 0.20s; }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(59,130,246,0.4);
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    opacity: 0.12;
+  }
+
+  .stat-card.blue::after  { background: var(--accent); }
+  .stat-card.cyan::after  { background: var(--accent2); }
+  .stat-card.purple::after { background: var(--accent3); }
+  .stat-card.green::after { background: var(--success); }
+
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    line-height: 1.2;
+    margin: 6px 0 4px;
+  }
+
+  .stat-card.blue .stat-value  { color: var(--accent); }
+  .stat-card.cyan .stat-value  { color: var(--accent2); }
+  .stat-card.purple .stat-value { color: var(--accent3); }
+  .stat-card.green .stat-value { color: var(--success); }
+
+  .stat-icon {
+    position: absolute; top: 16px; right: 18px;
+    font-size: 20px; opacity: 0.3;
+  }
+
+  /* ── FILTER BOX ── */
+  .filter-box {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    animation: fadeSlideIn 0.5s ease 0.2s both;
+  }
+
+  .filter-box label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .form-control, .form-select {
+    background: #0f1929 !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text) !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+    height: 40px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important;
+    outline: none !important;
+  }
+
+  .form-control::placeholder { color: #4a5568 !important; }
+  option { background: #0f1929; }
+
+  /* ── TABLE BOX ── */
+  .table-box {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 22px;
+    animation: fadeSlideIn 0.5s ease 0.25s both;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .table-header h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .result-badge {
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    background: #0d1929;
+    color: #94a3b8;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--card-border);
+    white-space: nowrap;
+  }
+
+  thead th:first-child { border-radius: 8px 0 0 8px; }
+  thead th:last-child  { border-radius: 0 8px 8px 0; }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    transition: background 0.2s, transform 0.2s;
+    animation: rowFadeIn 0.35s ease both;
+  }
+
+  @keyframes rowFadeIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  tbody tr:hover {
+    background: rgba(59,130,246,0.06);
+  }
+
+  tbody td {
+    padding: 12px 14px;
+    font-size: 13.5px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .order-id {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .csat-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .csat-5 { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+  .csat-4 { background: rgba(59,130,246,0.15); color: var(--accent); border: 1px solid rgba(59,130,246,0.3); }
+  .csat-3 { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .csat-2 { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
+  .csat-1 { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+  .price-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--success);
+  }
+
+  /* ── DETAILS BUTTON ── */
+  .details-btn {
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+
+  .details-btn:hover {
+    background: var(--accent);
+    color: white;
+    transform: scale(1.07);
+    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+  }
+
+  /* ── PAGINATION ── */
+  .pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .page-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    padding: 8px 18px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .page-btn:hover:not(:disabled) {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+  }
+
+  .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .page-indicator {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    padding: 0 6px;
+  }
+
+  /* ── MODAL ── */
+  .modal-content {
+    background: #0f1929 !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 16px !important;
+    color: var(--text) !important;
+  }
+
+  .modal-header {
+    border-bottom: 1px solid var(--card-border) !important;
+    padding: 18px 22px !important;
+  }
+
+  .modal-header h5 {
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .modal-body {
+    padding: 20px 22px !important;
+  }
+
+  .modal-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(30,45,69,0.6);
+    font-size: 13px;
+  }
+
+  .modal-detail-row:last-child { border-bottom: none; }
+
+  .modal-key {
+    color: var(--text-dim);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-weight: 600;
+  }
+
+  .modal-val {
+    font-weight: 600;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    max-width: 55%;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .btn-close { filter: invert(1) !important; }
+
+  /* ── LOADING ── */
+  .loading-row td {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-dim);
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 24px; height: 24px;
+    border: 2px solid rgba(59,130,246,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-bottom: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-state i { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">📊</div>
+    <div class="logo-text">CSAT Pro</div>
+  </div>
+  <a href="/" class="active"><i class="fa fa-house" style="width:16px"></i> Home</a>
+  <a href="/ann"><i class="fa fa-brain" style="width:16px"></i> ANN Prediction</a>
+  <a href="/analytics"><i class="fa fa-chart-line" style="width:16px"></i> Analytics</a>
+  <a href="/about"><i class="fa fa-circle-info" style="width:16px"></i> About</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+
+  <div class="page-header">
+    <h2>Customer Satisfaction Dashboard</h2>
+    <p>Real-time CSAT insights and customer data explorer</p>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stat-row">
+    <div class="stat-card blue">
+      <div class="stat-label">Total Records</div>
+      <div class="stat-value" id="statTotal">—</div>
+      <div class="stat-icon"><i class="fa fa-database"></i></div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Avg CSAT Score</div>
+      <div class="stat-value" id="statAvg">—</div>
+      <div class="stat-icon"><i class="fa fa-star"></i></div>
+    </div>
+    <div class="stat-card cyan">
+      <div class="stat-label">Avg Item Price</div>
+      <div class="stat-value" id="statPrice">—</div>
+      <div class="stat-icon"><i class="fa fa-tag"></i></div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Showing Page</div>
+      <div class="stat-value" id="statPage">1</div>
+      <div class="stat-icon"><i class="fa fa-file"></i></div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-box">
+    <div class="row g-3">
+      <div class="col">
+        <label>Channel</label>
+        <select id="channel" class="form-select">
+          <option value="">All Channels</option>
+          {% for c in channels %}
+          <option value="{{c}}">{{c}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <label>Category</label>
+        <select id="category" class="form-select">
+          <option value="">All Categories</option>
+          {% for c in categories %}
+          <option value="{{c}}">{{c}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <label>City</label>
+        <input type="text" id="city" list="cityList" placeholder="Search city..." class="form-control">
+        <datalist id="cityList">
+          {% for city in cities %}
+          <option value="{{city}}">
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="col">
+        <label>Product Category</label>
+        <select id="product" class="form-select">
+          <option value="">All Products</option>
+          {% for p in products %}
+          <option value="{{p}}">{{p}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <label>Agent Shift</label>
+        <select id="shift" class="form-select">
+          <option value="">All Shifts</option>
+          {% for s in shifts %}
+          <option value="{{s}}">{{s}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <label>Min Price</label>
+        <input type="number" id="min_price" placeholder="₹ Min" class="form-control">
+      </div>
+      <div class="col">
+        <label>Max Price</label>
+        <input type="number" id="max_price" placeholder="₹ Max" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-box">
+    <div class="table-header">
+      <h4><i class="fa fa-table" style="color:var(--accent);margin-right:8px"></i>Filtered Dataset</h4>
+      <span class="result-badge" id="resultBadge">Loading...</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>City</th>
+          <th>Product</th>
+          <th>Item Price</th>
+          <th>CSAT Score</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr class="loading-row">
+          <td colspan="6">
+            <div class="spinner"></div>
+            <div>Loading data...</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination-bar">
+      <button class="page-btn" id="prevBtn" onclick="prevPage()" disabled>
+        <i class="fa fa-chevron-left"></i> Prev
+      </button>
+      <span class="page-indicator">Page <span id="pageNum">1</span></span>
+      <button class="page-btn" id="nextBtn" onclick="nextPage()">
+        Next <i class="fa fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal fade" id="detailModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5><i class="fa fa-id-card" style="color:var(--accent);margin-right:8px"></i>Customer Details</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let page = 1;
+  let allData = [];
+
+  function loadData() {
+    const channel    = document.getElementById("channel").value;
+    const category   = document.getElementById("category").value;
+    const city       = document.getElementById("city").value;
+    const product    = document.getElementById("product").value;
+    const shift      = document.getElementById("shift").value;
+    const min_price  = document.getElementById("min_price").value;
+    const max_price  = document.getElementById("max_price").value;
+
+    const table = document.getElementById("tableBody");
+    table.innerHTML = `
+      <tr class="loading-row">
+        <td colspan="6">
+          <div class="spinner"></div>
+          <div style="color:var(--text-dim);font-size:13px">Fetching records...</div>
+        </td>
+      </tr>`;
+
+    fetch(`/filter_data?channel=${channel}&category=${category}&city=${city}&product=${product}&shift=${shift}&min_price=${min_price}&max_price=${max_price}&page=${page}`)
+      .then(res => res.json())
+      .then(res => {
+        allData = res.data;
+        table.innerHTML = "";
+
+        if (!res.data || res.data.length === 0) {
+          table.innerHTML = `
+            <tr><td colspan="6">
+              <div class="empty-state">
+                <i class="fa fa-magnifying-glass"></i>
+                <div>No records found</div>
+              </div>
+            </td></tr>`;
+          document.getElementById("resultBadge").textContent = "0 records";
+          return;
+        }
+
+        // Stat computations
+        const scores = res.data.map(r => parseFloat(r["CSAT Score"])).filter(v => !isNaN(v));
+        const prices = res.data.map(r => parseFloat(r["Item_price"])).filter(v => !isNaN(v));
+        const avgScore = scores.length ? (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1) : "—";
+        const avgPrice = prices.length ? "₹" + Math.round(prices.reduce((a,b) => a+b, 0) / prices.length) : "—";
+
+        document.getElementById("statTotal").textContent  = res.total || res.data.length;
+        document.getElementById("statAvg").textContent    = avgScore;
+        document.getElementById("statPrice").textContent  = avgPrice;
+        document.getElementById("statPage").textContent   = page;
+        document.getElementById("resultBadge").textContent = `${res.data.length} records`;
+
+        res.data.forEach((row, i) => {
+          const csat = row["CSAT Score"];
+          const csatClass = `csat-${Math.min(5, Math.max(1, Math.round(csat)))}`;
+          const tr = document.createElement("tr");
+          tr.style.animationDelay = `${i * 0.04}s`;
+          tr.innerHTML = `
+            <td><span class="order-id">#${row.Order_id}</span></td>
+            <td>${row.Customer_City || "—"}</td>
+            <td>${row.Product_category || "—"}</td>
+            <td><span class="price-tag">₹${row.Item_price}</span></td>
+            <td><span class="csat-badge ${csatClass}">${csat}</span></td>
+            <td>
+              <button class="details-btn" onclick="showDetails(${i})">
+                <i class="fa fa-eye"></i> View
+              </button>
+            </td>`;
+          table.appendChild(tr);
+        });
+
+        document.getElementById("prevBtn").disabled = page <= 1;
+        document.getElementById("pageNum").textContent = page;
+      })
+      .catch(() => {
+        table.innerHTML = `
+          <tr><td colspan="6">
+            <div class="empty-state">
+              <i class="fa fa-triangle-exclamation"></i>
+              <div>Failed to load data</div>
+            </div>
+          </td></tr>`;
+      });
+  }
+
+  function showDetails(index) {
+    const row = allData[index];
+    let html = "";
+    for (let key in row) {
+      html += `
+        <div class="modal-detail-row">
+          <span class="modal-key">${key.replace(/_/g,' ')}</span>
+          <span class="modal-val">${row[key] ?? "—"}</span>
+        </div>`;
+    }
+    document.getElementById("modalBody").innerHTML = html;
+    new bootstrap.Modal(document.getElementById("detailModal")).show();
+  }
+
+  function nextPage() { page++; loadData(); }
+  function prevPage() { if (page > 1) { page--; loadData(); } }
+
+  document.querySelectorAll("select, input").forEach(el => {
+    el.addEventListener("change", () => { page = 1; loadData(); });
+  });
+
+  window.onload = loadData;
+</script>
+</body>
+</html>
